@@ -2,7 +2,7 @@ from heapq import heappop, heappush
 from math import inf
 from collections import defaultdict
 
-FILENAME = "d17test"
+FILENAME = "d17input"
 PART = 1
 
 grid = []
@@ -19,34 +19,43 @@ visit = {"n": "^", "s": "v", "w": "<", "e": ">"}
 def newCoords(x, y, d):
     return x + diffs[d][0], y + diffs[d][1]
 
-
-dists = defaultdict(lambda: inf)
 heap = [(0, 0, 0, 1, "s"), (0, 0, 0, 1, "e")]  # (total loss, x, y, count to force turn)
 
-while heap:
-    # print(heap)
-    loss, x, y, movesToForce, direction = heappop(heap)
+def dijkstra(grid, low, high):
+    m, n = len(grid), len(grid[0])
+    dists = defaultdict(lambda: inf)
 
-    if x < 0 or x >= m or y < 0 or y >= n:  # outside of grid
-        continue
+    heap = [(0, 0, 0, 3, "s"), (0, 0, 0, 3, "e")]  # loss, x, y, movesToForce, direction
+    while heap:
+        cost, i, j, mtf, d = heappop(heap)
 
-    if x == m - 1 and y == n - 1:  # at destination
-        print(loss)
-        break
+        if (i, j) == (m-1, n-1):
+            return cost
+        if cost > dists[i, j, mtf, d]:
+            continue
 
-    if movesToForce > 0:  # Able to continue as normal
-        nx, ny = newCoords(x, y, direction)
-        if 0 <= nx < m and 0 <= ny < n:
-            newLoss = loss + grid[nx][ny]
-            if dists[(nx, ny, direction)] >= newLoss:
-                dists[(nx, ny, direction)] = newLoss
-                heappush(heap, (newLoss, nx, ny, movesToForce - 1, direction))
+        # print(cost, i, j, mtf, d)
 
-    # Turns
-    for d in turn_dirs[direction]:
-        nx, ny = newCoords(x, y, d)
-        if 0 <= nx < m and 0 <= ny < n:
-            newLoss = loss + grid[nx][ny]
-            if dists[(nx, ny, direction)] >= newLoss:
-                dists[(nx, ny, direction)] = newLoss
-                heappush(heap, (newLoss, nx, ny, 3, direction))
+        if mtf > low: # It turns out we can't do more than x in a row, rather than going down to low.
+            ni, nj = newCoords(i, j, d)
+            if 0 <= ni < m and 0 <= nj < n:
+                newLoss = cost + grid[ni][nj]
+                if newLoss < dists[i, j, mtf-1, d]:
+                    dists[i, j, mtf-1, d] = newLoss
+                    heappush(heap, (newLoss, ni, nj, mtf - 1, d))
+
+        for nd in turn_dirs[d]:
+            ni, nj = newCoords(i, j, nd)
+            if 0 <= ni < m and 0 <= nj < n:
+                newLoss = cost + grid[ni][nj]
+                if newLoss < dists[i, j, high, nd]:
+                    dists[i, j, high, nd] = newLoss
+                    heappush(heap, (newLoss, ni, nj, high, nd))
+
+    return -1
+
+# PART 1
+print(dijkstra(grid, 1, 3))
+
+# PART 2
+print(dijkstra(grid, 4, 10))
