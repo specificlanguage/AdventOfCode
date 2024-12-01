@@ -4,7 +4,7 @@ from collections import defaultdict
 from heapq import heappop, heappush
 from math import inf
 
-with open("d17input", "r") as file:
+with open("d17test", "r") as file:
     data = file.read().strip()
 
 GRID = data.split("\n")
