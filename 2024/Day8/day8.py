@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 FILENAME = "day8input"
-PART = 1
+PART = 2
 
 ans = 0
 grid = []
